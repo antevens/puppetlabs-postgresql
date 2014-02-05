@@ -16,9 +16,9 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
       return nil
     end
 
-    output, status = run_unless_sql_command(resource[:unless])
+    output = run_unless_sql_command(resource[:unless])
 
-    if status != 0
+    if output.status != 0
       self.fail("Error evaluating 'unless' clause: '#{output}'")
     end
     result_count = output.strip.to_i
@@ -36,9 +36,9 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
   end
 
   def command=(val)
-    output, status = run_sql_command(val)
+    output = run_sql_command(val)
 
-    if status != 0
+    if output.status != 0
       self.fail("Error executing SQL; psql returned #{status}: '#{output}'")
     end
   end
