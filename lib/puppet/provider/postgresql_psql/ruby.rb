@@ -57,10 +57,10 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
 
     if resource[:cwd]
       Dir.chdir resource[:cwd] do
-        Puppet::Util::SUIDManager.run_and_capture(command, resource[:psql_user], resource[:psql_group])
+        Puppet::Util::Execution.execute(command, :uid => resource[:psql_user], :guid => resource[:psql_group])
       end
     else
-      Puppet::Util::SUIDManager.run_and_capture(command, resource[:psql_user], resource[:psql_group])
+      Puppet::Util::Execution.execute(command, :uid => resource[:psql_user], :guid => resource[:psql_group])
     end
   end
 
