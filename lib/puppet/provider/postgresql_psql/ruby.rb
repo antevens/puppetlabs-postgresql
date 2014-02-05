@@ -57,7 +57,7 @@ Puppet::Type.type(:postgresql_psql).provide(:ruby) do
 
     if resource[:cwd]
       Dir.chdir resource[:cwd] do
-        Puppet::Util::Execution.execute(command, :uid => resource[:psql_user], :guid => resource[:psql_group])
+        Puppet::Util::Execution.execute(command, :uid => resource[:psql_user], :guid => resource[:psql_group], :combine => false)
       end
     else
       Puppet::Util::Execution.execute(command, :uid => resource[:psql_user], :guid => resource[:psql_group])
