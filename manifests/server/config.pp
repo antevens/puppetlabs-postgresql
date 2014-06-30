@@ -4,6 +4,7 @@ class postgresql::server::config {
   $ip_mask_deny_postgres_user = $postgresql::server::ip_mask_deny_postgres_user
   $ip_mask_allow_all_users    = $postgresql::server::ip_mask_allow_all_users
   $listen_addresses           = $postgresql::server::listen_addresses
+  $port                       = $postgresql::server::port
   $ipv4acls                   = $postgresql::server::ipv4acls
   $ipv6acls                   = $postgresql::server::ipv6acls
   $pg_hba_conf_path           = $postgresql::server::pg_hba_conf_path
@@ -14,18 +15,12 @@ class postgresql::server::config {
   $version                    = $postgresql::server::version
   $manage_pg_hba_conf         = $postgresql::server::manage_pg_hba_conf
 
-  File {
-    owner => $user,
-    group => $group,
-  }
-
   if ($ensure == 'present' or $ensure == true) {
 
     if ($manage_pg_hba_conf == true) {
       # Prepare the main pg_hba file
-      include concat::setup
       concat { $pg_hba_conf_path:
-        owner  => 0,
+        owner  => $user,
         group  => $group,
         mode   => '0640',
         warn   => true,
@@ -56,12 +51,19 @@ class postgresql::server::config {
           auth_option => $local_auth_option,
           order       => '002',
         }
+        postgresql::server::pg_hba_rule { 'allow localhost TCP access to postgresql user':
+          type        => 'host',
+          user        => $user,
+          address     => '127.0.0.1/32',
+          auth_method => 'md5',
+          order       => '003',
+        }
         postgresql::server::pg_hba_rule { 'deny access to postgresql user':
           type        => 'host',
           user        => $user,
           address     => $ip_mask_deny_postgres_user,
           auth_method => 'reject',
-          order       => '003',
+          order       => '004',
         }
 
         # ipv4acls are passed as an array of rule strings, here we transform
@@ -95,6 +97,18 @@ class postgresql::server::config {
     # want to allow any connections from remote hosts.
     postgresql::server::config_entry { 'listen_addresses':
       value => $listen_addresses,
+    }
+    postgresql::server::config_entry { 'port':
+      value => "${port}",
+    }
+
+    # RedHat-based systems hardcode some PG* variables in the init script, and need to be overriden
+    # in /etc/sysconfig/pgsql/postgresql. Create a blank file so we can manage it with augeas later.
+    if ($::osfamily == 'RedHat') and ($::operatingsystemrelease !~ /^7/) {
+      file { '/etc/sysconfig/pgsql/postgresql':
+        ensure  => present,
+        replace => false,
+      }
     }
   } else {
     file { $pg_hba_conf_path:

@@ -14,11 +14,11 @@ Puppet::Type.type(:postgresql_conf).provide(
   record_line :parsed,
     :fields   => %w{name value comment},
     :optional => %w{comment},
-    :match    => /^\s*(\w+)\s*=?\s*(.*?)(?:\s*#\s*(.*))?\s*$/,
+    :match    => /^\s*([\w\.]+)\s*=?\s*(.*?)(?:\s*#\s*(.*))?\s*$/,
     :to_line  => proc { |h|
 
       # simple string and numeric values don't need to be enclosed in quotes
-      dontneedquote = h[:value].match(/^(\w+|[0-9.-]+)$/)
+      dontneedquote = h[:value].match(/^(\w+)$/)
       dontneedequal = h[:name].match(/^(include|include_if_exists)$/i)
 
       str =  h[:name].downcase # normalize case
