@@ -19,6 +19,7 @@ class postgresql::lib::devel(
       file {'/usr/bin/pg_config':
         ensure => link,
         target => "${postgresql::params::bindir}/pg_config",
+        replace => false
       }
     }
   }
