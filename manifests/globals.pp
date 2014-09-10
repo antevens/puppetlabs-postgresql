@@ -1,8 +1,6 @@
 # Class for setting cross-class global overrides. See README.md for more
 # details.
 class postgresql::globals (
-  $ensure               = undef,
-
   $client_package_name  = undef,
   $server_package_name  = undef,
   $contrib_package_name = undef,
@@ -22,6 +20,7 @@ class postgresql::globals (
   $createdb_path        = undef,
   $psql_path            = undef,
   $pg_hba_conf_path     = undef,
+  $pg_ident_conf_path   = undef,
   $postgresql_conf_path = undef,
 
   $pg_hba_conf_defaults = undef,
@@ -42,9 +41,8 @@ class postgresql::globals (
   $encoding             = undef,
   $locale               = undef,
 
-  $manage_firewall      = undef,
   $manage_pg_hba_conf   = undef,
-  $firewall_supported   = undef,
+  $manage_pg_ident_conf = undef,
 
   $manage_package_repo  = undef
 ) {
@@ -85,6 +83,10 @@ class postgresql::globals (
       default => '9.2',
     },
     'FreeBSD' => '93',
+    'Suse' => $::operatingsystem ? {
+      'SLES' => '91',
+      default => undef,
+    },
     default => undef,
   }
   $globals_version = pick($version, $default_version, 'unknown')
@@ -97,6 +99,7 @@ class postgresql::globals (
     '8.4'   => '1.5',
     '9.0'   => '1.5',
     '9.1'   => '1.5',
+    '91'    => '1.5',
     '9.2'   => '2.0',
     '9.3'   => '2.1',
     default => undef,
@@ -108,7 +111,6 @@ class postgresql::globals (
     # Workaround the lack of RHEL7 repositories for now.
     if ! ($::operatingsystem == 'RedHat' and $::operatingsystemrelease =~ /^7/) {
       class { 'postgresql::repo':
-        ensure  => $ensure,
         version => $globals_version
       }
     }

@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe 'postgresql::server::database_grant', :type => :define do
+describe 'postgresql::server::schema', :type => :define do
   let :facts do
     {
       :osfamily => 'Debian',
       :operatingsystem => 'Debian',
       :operatingsystemrelease => '6.0',
       :kernel => 'Linux',
-      :concat_basedir => tmpfilename('contrib'),
+      :concat_basedir => tmpfilename('schema'),
       :id => 'root',
       :path => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
     }
@@ -19,9 +19,8 @@ describe 'postgresql::server::database_grant', :type => :define do
 
   let :params do
     {
-      :privilege => 'ALL',
-      :db => 'test',
-      :role => 'test',
+      :owner => 'jane',
+      :db    => 'janedb',
     }
   end
 
@@ -29,6 +28,5 @@ describe 'postgresql::server::database_grant', :type => :define do
     "class {'postgresql::server':}"
   end
 
-  it { is_expected.to contain_postgresql__server__database_grant('test') }
-  it { is_expected.to contain_postgresql__server__grant('database:test') }
+  it { should contain_postgresql__server__schema('test') }
 end
